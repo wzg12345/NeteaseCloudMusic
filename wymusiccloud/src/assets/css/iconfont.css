@@ -1,0 +1,31 @@
+@font-face {
+    font-family: "my-icon";
+    src: url('iconfont.ttf') format('truetype'); /* chrome, firefox, opera, Safari, Android, iOS 4.2+ */
+}
+
+.my-icon {
+    font-family: "my-icon" !important;
+    font-size: 46px;
+    font-style: normal;
+}
+
+.my-icon-pengyou:before {
+    content: "\e604";
+}
+
+.my-icon-ziyuan:before {
+    content: "\e605";
+}
+
+.my-icon-yinle:before {
+    content: "\e606";
+}
+
+.my-icon-tubiao_zhanghao:before {
+    content: "\e607";
+}
+
+.my-icon-faxian:before {
+    content: "\e603";
+}
+
