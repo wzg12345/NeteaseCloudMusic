@@ -15,6 +15,17 @@ export const getHomePage = () => Http.get('/homepage/block/page');//首页-发�
 
 export const getRecommend = () => Http.get('/recommend/resource');//获取每日推荐歌单
 
+export const personalized = p => Http.get('/personalized',p);//推荐歌单
+
+export const personal_fm = () => Http.get('/personal_fm');//私人FM
+
+export const Recommend = p => Http.get('/top/playlist',p);//歌单 ( 网友精选碟 )
+
+export const Related = p => Http.get('/playlist/detail',p);//歌单推荐详细
+
+
+
+
 
 
 
