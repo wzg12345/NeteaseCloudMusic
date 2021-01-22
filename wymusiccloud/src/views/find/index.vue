@@ -4,32 +4,26 @@
             <van-icon name="wap-nav" class="left-nav"/>
             <form action="/" class="search">
                 <van-icon name="search"/>
-                <input type="text" :placeholder="SearchValue">
+                <input
+                        type="text"
+                        :placeholder="SearchValue"
+                        :style="{width:text(SearchValue)}"
+                >
             </form>
         </div>
-
-        <van-swipe class="my-swipe" :autoplay="3000" indicator-color="white">
-            <van-swipe-item v-for="(swiper,index) in Banners" :key="index">
-                <img :src="swiper.pic" alt="">
-            </van-swipe-item>
-        </van-swipe>
-        <van-swipe class="swipe-find-Ball" :loop="false" :width="75" :show-indicators="false">
-            <van-swipe-item v-for="(swipeBall,index) in SwipeBalls" :key="index">
+        <swiper ref="SwiperBanner" class="swiper-banner" :options="SwiperBanners">
+            <swiper-slide v-for="(swiper,index) in Banners" :key="index"><img :src="swiper.pic" alt=""></swiper-slide>
+            <div class="swiper-pagination" slot="pagination"></div>
+        </swiper>
+        <swiper ref="SwiperBall" class="swipe-find-Ball" :options="SwiperBalls">
+            <swiper-slide v-for="(swipeBall,index) in SwipeBalls" :key="index">
                 <div class="ball-box"><img :src="swipeBall.iconUrl" alt=""></div>
                 <p class="ball-name">{{swipeBall.name}}</p>
-            </van-swipe-item>
-        </van-swipe>
-        <div class="title-box">
-            <h3>推荐歌单</h3>
-            <div class="more">查看更多</div>
-        </div>
-        <van-swipe class="swipe-recommend" :loop="false" :width="130" :show-indicators="false">
-            <van-swipe-item v-for="(swipeRecommend,index) in RecommendSong" :key="index">
-                <div class="img-box">
-                    <img :src="swipeRecommend.picUrl" alt="">
-                </div>
-            </van-swipe-item>
-        </van-swipe>
+            </swiper-slide>
+            <!--<div class="swiper-pagination" slot="pagination"></div>-->
+        </swiper>
+        <IndexSwiper :title='SongTitle[0]' :song-array="SongArry.RecommendSong" ></IndexSwiper>
+        <IndexSwiper :title='SongTitle[1]' :song-array="SongArry.PersonAlized" ></IndexSwiper>
     </div>
 </template>
 
@@ -38,22 +32,48 @@
     getSearchDefault,
     getBanners,
     getHomePageBall,
-    getRecommend
+    getRecommend,
+    personalized,
+    personal_fm,
+    Related,
+    Recommend
   } from '../../api'
+  import IndexSwiper from '../../components/IndexSwipe'
 
   export default {
     name: "index",
+    components: {
+      IndexSwiper
+    },
     data() {
       return {
         SearchValue: '',
         Banners: [],
         SwipeBalls: [],
-        RecommendSong: [],
+        SongTitle: ['每日推荐','推荐歌单'],
+        SongArry: {
+          RecommendSong:[],
+          PersonAlized:[],
+        },
+        SwiperBanners: {
+          autoplay: {// 自动滑动
+            delay: 1000, //1秒切换一次
+            disableOnInteraction: false
+          },
+          pagination: {
+            el: '.swiper-pagination'
+          },
+        },
+        SwiperBalls: {
+          slidesPerView: 5.2,
+        },
+
       }
     },
     created() {
       //搜索
       getSearchDefault().then(res => {
+        // console.log(res);
         this.SearchValue = res.data.realkeyword;
       });
       //banners
@@ -68,10 +88,63 @@
       });
       //获取用户每天推荐歌单
       getRecommend().then(res => {
-        this.RecommendSong = res.recommend;
-        console.log(res)
+        this.SongArry.RecommendSong = res.recommend;
+        // console.log(res);
+        this.SongArry.RecommendSong.forEach((index, item, arr) => {
+          if (index.playcount.toString().length >= 5) {
+            if (index.playcount.toString().length >= 9) {
+              index.playcount = (index.playcount / 100000000).toFixed(2) + '亿';
+            } else {
+              index.playcount = (index.playcount / 10000).toFixed(1) + '万';
+            }
+          } else {
+            return index.playcount
+          }
+        })
       });
 
+      //推荐歌单
+      personalized({
+        limit:7,
+      }).then(res => {
+        this.SongArry.PersonAlized = res.result;
+        this.SongArry.PersonAlized.forEach((index, item, arr) => {
+          index.playcount = index.playCount;
+          if (index.playcount.toString().length >= 5) {
+            if (index.playcount.toString().length >= 9) {
+              index.playcount = (index.playcount / 100000000).toFixed(2) + '亿';
+            } else {
+              index.playcount = (index.playcount / 10000).toFixed(0) + '万';
+            }
+          } else {
+            return index.playcount
+          }
+        })
+      });
+
+      Recommend({
+        order:'hot'
+      }).then(res => {
+        let id = res.playlists[Math.random() * res.playlists.length | 0].id;
+        console.log(res.playlists[Math.random() * res.playlists.length | 0].id);
+        Related({
+          id:id
+        }).then(res=>{
+          console.log(res);
+        })
+      });
+    },
+    computed: {
+      text() {
+        return function (value) {
+          if (value == '' || value == 0) {
+            return '100%'
+          } else {
+            // console.log(String(value).length);
+            return String(value).length * 32 / 75 + 'rem'
+          }
+        }
+      }
     },
     methods: {}
   }
@@ -94,14 +167,13 @@
         width: 520px;
         height: 72px;
         display: flex;
-        justify-content: flex-start;
         align-items: center;
-        border-radius: 2rem;
+        justify-content: center;
+        border-radius: 200px;
         background: #202020;
         margin: 48px auto;
 
         & > input {
-            width: auto;
             height: 100%;
             border-radius: 2rem;
             background: none;
@@ -109,7 +181,7 @@
             font-size: $font32;
             color: $color-hui;
             font-weight: 600;
-            padding-left: 10px;
+            padding: 0 10px;
 
             &::-webkit-input-placeholder {
                 color: $color-hui1;
@@ -118,17 +190,10 @@
 
         & > .van-icon {
             font-size: 30px;
-            padding-left: 150px;
             color: $color-hui;
         }
     }
 
-    .my-swipe {
-        width: 686px;
-        height: 268px;
-        margin: 0 auto;
-        border-radius: 15px;
-    }
 
     .swipe-find-Ball {
         width: calc(100% - 32px);
@@ -151,42 +216,12 @@
         }
     }
 
-    .title-box {
+
+    .swiper-banner {
         width: 686px;
-        margin: 70px auto 30px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        color: $color;
-
-        & > h3 {
-            font-size: 40px;
-        }
-
-        & > .more {
-            width: 155px;
-            height: 52px;
-            border: 2px solid $color-hui1;
-            font-size: $font28;
-            line-height: 52px;
-            text-align: center;
-            border-radius: 50px;
-        }
+        height: 268px;
+        margin: 0 auto;
+        border-radius: 15px;
     }
-    .swipe-recommend {
-        width: calc(100% - 32px);
-        height: 288px;
-        margin-left: 32px;
-        color: $color;
-        & .img-box {
-            width: 210px;
-            height: 210px;
-            border-radius: 15px;
-            position: relative;
-            overflow: hidden;
-        }
-        & .r-title {
-            font-size: $font24;
-        }
-    }
+
 </style>
