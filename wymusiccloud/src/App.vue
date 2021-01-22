@@ -6,33 +6,44 @@
 </template>
 <script>
   import Nav from './components/BottomNav.vue'
-  import { login,loginRefresh } from './api'
+  import {login, loginRefresh} from './api'
+  import {mapMutations} from 'vuex'
 
   export default {
-    components:{
+    components: {
       Nav,
     },
+    data() {
+      return {}
+    },
     created() {
-      // login({phone:'18844024442',password:'xixi12345'}).then(res=>{
-      //   console.log(res)
-      // });
       // loginRefresh().then(res=>{
       //   console.log(res)
       // })
-    }
+    },
+    mounted(){
+      login({phone: '18844024442', password: 'xixi12345'}).then(res => {
+        this.storeUID(res.profile.userId);
+        // this.$store.commit('storeUID',res.profile.userId);
+      })
+    },
+    methods: {
+      ...mapMutations(['storeUID']),
+    },
   }
 </script>
 <style lang="scss">
-    html,body {
+    html, body {
         width: 100%;
         height: 100%;
         background: #0d0d0d;
-        overflow: hidden;
     }
+
     * {
         margin: 0;
         padding: 0;
     }
+
     #app {
         text-align: center;
         width: 100vw;
@@ -51,6 +62,7 @@
             }
         }
     }
+
     img {
         display: block;
         width: 100%;
