@@ -24,6 +24,7 @@
         </swiper>
         <IndexSwiper :title='SongTitle[0]' :song-array="SongArry.RecommendSong" ></IndexSwiper>
         <IndexSwiper :title='SongTitle[1]' :song-array="SongArry.PersonAlized" ></IndexSwiper>
+        123
     </div>
 </template>
 
